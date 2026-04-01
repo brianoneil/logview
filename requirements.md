@@ -72,10 +72,11 @@ Logview is intended to run as a **Node.js web process** on **[Dokku](https://dok
 
 ### Default: buildpack deploy (this repo)
 
-- **`package.json`**: declares **`engines.node`** as `20.x` so Dokku/Herokuish selects Node 20; **`npm run build`** runs `next build` on deploy; **`npm start`** runs `next start` after deps are installed.
+- **`package.json`**: **`engines.node`** is `>=20`. **`typescript`** and **`@types/*`** live in **`dependencies`** so `next build` succeeds when Dokku (or any host) runs **`npm install` / `npm ci` without devDependencies**. **`npm run build`** runs `next build`; **`npm start`** runs `next start` after install.
+- **`next.config.mjs`**: JavaScript config (avoids loading **`next.config.ts`** without TypeScript on lean production installs). **`eslint.ignoreDuringBuilds`** skips ESLint during deploy builds; run **`npm run lint`** locally or in CI.
 - **`Procfile`**: defines the `web` process (`web: npm start`). Dokku uses process types from the Procfile; the **`web`** process receives HTTP traffic from the proxy.
 - **`app.json`**: optional `formation` to pin **one** `web` dyno/container (Dokku honors this for scaling defaults).
-- **`.nvmrc`**: hints local and CI Node version (20); aligns with `engines` for the Node buildpack.
+- **`.nvmrc`**: hints local and CI Node version (20); aligns with the Node buildpack.
 - **`package-lock.json`**: commit this file so install versions are reproducible on the server.
 
 The server **must listen on `process.env.PORT`**. **`next start`** reads **`PORT`** from the environment (Dokku sets it). **`next start`** defaults to hostname **`0.0.0.0`**, so the app accepts traffic inside the container without extra flags.

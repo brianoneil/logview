@@ -176,7 +176,8 @@ body {
 }
 
 .log-viewer__table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.8125rem;
 }
@@ -250,8 +251,13 @@ body {
   color: #9aa3b8;
 }
 
+/* Preserve spaces and box-drawing / column alignment; avoid mid-line wraps. */
 .log-viewer__message {
-  word-break: break-word;
+  white-space: pre;
+  overflow-wrap: normal;
+  word-break: normal;
+  line-height: 1.35;
+  tab-size: 4;
 }
 
 .log-viewer__empty {
