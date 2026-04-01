@@ -1,0 +1,261 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  line-height: 1.5;
+  color: #e8e8ec;
+  background: #0f1117;
+}
+
+.main {
+  max-width: min(1200px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+}
+
+.log-viewer__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.log-viewer__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.log-viewer__subtitle {
+  margin: 0;
+  max-width: 42rem;
+  color: #a8abb8;
+  font-size: 0.95rem;
+}
+
+.log-viewer__code {
+  padding: 0.1em 0.35em;
+  font-size: 0.88em;
+  color: #c8d0f0;
+  background: #1a1f2e;
+  border-radius: 4px;
+}
+
+.log-viewer__status {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  background: #1a1f2e;
+  color: #a8abb8;
+}
+
+.log-viewer__status[data-state="open"] {
+  color: #8ce99a;
+}
+
+.log-viewer__status[data-state="connecting"] {
+  color: #e8d07a;
+}
+
+.log-viewer__status[data-state="error"] {
+  color: #ff8a8a;
+}
+
+.log-viewer__toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.log-viewer__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.log-viewer__field--row {
+  flex-direction: row;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.log-viewer__field--grow {
+  flex: 1 1 12rem;
+}
+
+.log-viewer__filter-row {
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.log-viewer__filter-row .log-viewer__button {
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+.log-viewer__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8b90a0;
+}
+
+.log-viewer__input {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  color: #e8e8ec;
+  background: #161922;
+  border: 1px solid #2a3145;
+  border-radius: 6px;
+}
+
+.log-viewer__input:focus {
+  outline: 2px solid #5b7cfe;
+  outline-offset: 1px;
+}
+
+.log-viewer__button {
+  flex: 0 0 auto;
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  color: #0f1117;
+  background: #c8d0f0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.log-viewer__button:hover {
+  filter: brightness(1.05);
+}
+
+.log-viewer__button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.log-viewer__button:disabled:hover {
+  filter: none;
+}
+
+.log-viewer__button--secondary {
+  color: #e8e8ec;
+  background: transparent;
+  border: 1px solid #4a5570;
+  font-weight: 500;
+}
+
+.log-viewer__button--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  filter: none;
+}
+
+.log-viewer__table-wrap {
+  overflow: auto;
+  max-height: min(70vh, 900px);
+  border: 1px solid #2a3145;
+  border-radius: 8px;
+  background: #12151c;
+}
+
+.log-viewer__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.log-viewer__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.6rem 0.65rem;
+  text-align: left;
+  background: #161922;
+  border-bottom: 1px solid #2a3145;
+  color: #a8abb8;
+  font-weight: 600;
+}
+
+.log-viewer__table td {
+  padding: 0.45rem 0.65rem;
+  border-bottom: 1px solid #222838;
+  vertical-align: top;
+}
+
+.log-viewer__table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.log-viewer__col-time {
+  width: 7.5rem;
+  white-space: nowrap;
+}
+
+.log-viewer__col-level {
+  width: 4.5rem;
+}
+
+.log-viewer__col-client {
+  width: 7rem;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.log-viewer__mono {
+  font-family:
+    ui-monospace,
+    "SFMono-Regular",
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+}
+
+.log-viewer__level {
+  font-weight: 600;
+  text-transform: lowercase;
+}
+
+.log-viewer__row[data-level="error"] .log-viewer__level {
+  color: #ff8a8a;
+}
+
+.log-viewer__row[data-level="warn"] .log-viewer__level {
+  color: #e8d07a;
+}
+
+.log-viewer__row[data-level="info"] .log-viewer__level {
+  color: #8ccfff;
+}
+
+.log-viewer__row[data-level="debug"] .log-viewer__level {
+  color: #9aa3b8;
+}
+
+.log-viewer__message {
+  word-break: break-word;
+}
+
+.log-viewer__empty {
+  text-align: center;
+  color: #8b90a0;
+  padding: 2rem 1rem !important;
+}

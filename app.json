@@ -1,0 +1,9 @@
+{
+  "name": "Logview",
+  "description": "Remote real-time log viewer",
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  }
+}
