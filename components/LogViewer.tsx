@@ -2,7 +2,13 @@
 
 import type { LogEntry } from "@/lib/types";
 import { AnsiUp } from "ansi_up";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 function formatTime(iso: string) {
   try {
@@ -50,11 +56,28 @@ export function LogViewer({ initialStreamClientId = "" }: LogViewerProps) {
     "connecting",
   );
 
+  /**
+   * After "Clear local logs", SSE reconnects (browser/proxy) re-subscribe and the
+   * server replays its buffer — without a cutoff those rows would reappear.
+   * Reset when the stream subscription changes so a new filter still gets replay.
+   */
+  const lastClearMsRef = useRef<number | null>(null);
+
   const appendEntries = useCallback((entries: LogEntry[]) => {
-    setRows((prev) => [...prev, ...entries].slice(-5_000));
+    const cutoff = lastClearMsRef.current;
+    const filtered =
+      cutoff !== null
+        ? entries.filter((e) => {
+            const t = Date.parse(e.ts);
+            return !Number.isNaN(t) && t >= cutoff;
+          })
+        : entries;
+    if (filtered.length === 0) return;
+    setRows((prev) => [...prev, ...filtered].slice(-5_000));
   }, []);
 
   useEffect(() => {
+    lastClearMsRef.current = null;
     setRows([]);
 
     const path =
@@ -112,6 +135,7 @@ export function LogViewer({ initialStreamClientId = "" }: LogViewerProps) {
   };
 
   const clearLocalLogs = () => {
+    lastClearMsRef.current = Date.now();
     setRows([]);
   };
 
