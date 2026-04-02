@@ -546,29 +546,58 @@ export function LogViewer({
                 )}
               </div>
               <div className="log-viewer__tail" aria-live="polite">
-                <span className="log-viewer__tail-mode" data-mode={tailMode}>
-                  {tailMode === "live" ? "● Live" : "○ Paused"}
+                <span
+                  className="log-viewer__tail-mode"
+                  data-mode={tailMode}
+                  aria-label={
+                    tailMode === "live"
+                      ? "Live tail, following newest logs"
+                      : "Live tail off, paused"
+                  }
+                  title={
+                    tailMode === "live"
+                      ? "Following newest logs"
+                      : "Paused — not following newest"
+                  }
+                >
+                  ● Live
                 </span>
                 {tailMode === "live" ? (
                   <button
                     type="button"
-                    className="log-viewer__button log-viewer__button--secondary log-viewer__tail-action"
+                    className="log-viewer__tail-icon-btn"
                     onClick={pauseFollowing}
-                    title="Stop following new lines (same as scrolling down)"
+                    title="Pause — stop following new lines (same as scrolling down)"
+                    aria-label="Pause live tail"
                   >
-                    Pause
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="currentColor"
+                      aria-hidden
+                    >
+                      <rect x="2" y="1" width="3.5" height="12" rx="1" />
+                      <rect x="8.5" y="1" width="3.5" height="12" rx="1" />
+                    </svg>
                   </button>
                 ) : (
                   <button
                     type="button"
-                    className="log-viewer__button log-viewer__tail-action"
+                    className="log-viewer__tail-icon-btn"
                     onClick={scrollToLatest}
-                    title="Scroll to newest logs and resume live tail"
+                    title="Resume live tail — scroll to newest"
+                    aria-label="Resume live tail"
                   >
-                    Jump to latest
-                    {newWhileScrolledCount > 0
-                      ? ` (${newWhileScrolledCount.toLocaleString()} new)`
-                      : ""}
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="currentColor"
+                      aria-hidden
+                    >
+                      <path d="M3 2.5 L12 7 L3 11.5 Z" />
+                    </svg>
                   </button>
                 )}
               </div>
@@ -620,6 +649,25 @@ export function LogViewer({
           aria-label="Log lines"
           onScroll={onScrollAreaScroll}
         >
+          {tailMode === "paused" && newWhileScrolledCount > 0 ? (
+            <div className="log-viewer__new-float" aria-live="polite">
+              <button
+                type="button"
+                className="log-viewer__new-pill"
+                onClick={scrollToLatest}
+                title="Go to newest messages and resume live tail"
+                aria-label={`${newWhileScrolledCount.toLocaleString()} new messages, go to newest`}
+              >
+                <span className="log-viewer__new-pill__arrow" aria-hidden>
+                  ↑
+                </span>
+                <span className="log-viewer__new-pill__count">
+                  {newWhileScrolledCount.toLocaleString()}
+                </span>
+                <span className="log-viewer__new-pill__label">New messages</span>
+              </button>
+            </div>
+          ) : null}
           <table className="log-viewer__table">
           <thead>
             <tr>

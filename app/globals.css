@@ -206,11 +206,11 @@ body {
   color: #a8abb8;
 }
 
-/* Compact stream + tail to the left of the levels chart */
+/* Stream status + live/tail stack: right-align so tail lines up under the status pill. */
 .log-viewer__header-stream {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 0.28rem;
   flex: 0 0 auto;
   min-width: 0;
@@ -225,14 +225,7 @@ body {
 }
 
 .log-viewer__header-stream .log-viewer__tail {
-  font-size: 0.72rem;
-  gap: 0.35rem 0.45rem;
-  justify-content: flex-start;
-}
-
-.log-viewer__header-stream .log-viewer__tail-action {
-  font-size: 0.7rem;
-  padding: 0.18rem 0.45rem;
+  justify-content: flex-end;
 }
 
 .log-viewer__status[data-state="open"] {
@@ -402,15 +395,15 @@ body {
   justify-content: flex-end;
 }
 
-/* Fixed width so the pill does not resize as counts change (fits ~10,000+ and filtered pairs). */
+/* Fixed width so the pill does not resize as counts change (tabular digits; clip if extreme). */
 .log-viewer__count-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 21ch;
-  min-width: 21ch;
-  max-width: 21ch;
+  width: 18ch;
+  min-width: 18ch;
+  max-width: 18ch;
   padding: 0.22rem 0.5rem;
   font-size: 0.72rem;
   font-weight: 600;
@@ -441,9 +434,14 @@ body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-end;
-  gap: 0.45rem 0.65rem;
-  font-size: 0.85rem;
+  justify-content: flex-start;
+  gap: 0.4rem 0.55rem;
+  min-height: 2.15rem;
+  font-size: 0.72rem;
+}
+
+.log-viewer__tail-mode {
+  white-space: nowrap;
 }
 
 .log-viewer__tail-mode[data-mode="live"] {
@@ -451,14 +449,42 @@ body {
   font-weight: 600;
 }
 
+/* Same label when paused — muted so live reads as “off”. */
 .log-viewer__tail-mode[data-mode="paused"] {
-  color: #e8d07a;
-  font-weight: 600;
+  color: #5c6378;
+  font-weight: 500;
+  opacity: 0.9;
 }
 
-.log-viewer__tail-action {
-  font-size: 0.8125rem;
-  padding: 0.3rem 0.65rem;
+/* Fixed size: swap play/pause without layout shift */
+.log-viewer__tail-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.15rem;
+  height: 2.15rem;
+  padding: 0;
+  font: inherit;
+  color: #e8e8ec;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #4a5570;
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.log-viewer__tail-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: #5a6578;
+}
+
+.log-viewer__tail-icon-btn:focus-visible {
+  outline: 2px solid #5b7cfe;
+  outline-offset: 2px;
 }
 
 .log-viewer__controls-left {
@@ -560,6 +586,7 @@ body {
 }
 
 .log-viewer__table-wrap {
+  position: relative;
   overflow: auto;
   /* Avoid browser scroll anchoring fighting our “newest at top” prepend behavior. */
   overflow-anchor: none;
@@ -567,6 +594,93 @@ body {
   border: 1px solid #2a3145;
   border-radius: 8px;
   background: #12151c;
+}
+
+/* Sticky over the log list when paused with unread lines (count + jump). */
+.log-viewer__new-float {
+  position: sticky;
+  top: 8px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  margin-bottom: -2.85rem;
+  padding-bottom: 0.55rem;
+}
+
+.log-viewer__new-pill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 0.45rem 1rem 0.45rem 0.65rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #e8e8ec;
+  /* Slightly lifted from the log surface — cool tint, not neon */
+  background: linear-gradient(
+    165deg,
+    rgba(52, 62, 92, 0.96) 0%,
+    rgba(38, 46, 72, 0.98) 45%,
+    rgba(26, 30, 48, 0.99) 100%
+  );
+  border: 1px solid rgba(110, 130, 190, 0.42);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.25),
+    0 10px 28px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease;
+}
+
+.log-viewer__new-pill:hover {
+  border-color: rgba(130, 155, 220, 0.55);
+  background: linear-gradient(
+    165deg,
+    rgba(58, 70, 102, 0.98) 0%,
+    rgba(42, 52, 82, 0.99) 50%,
+    rgba(30, 36, 56, 1) 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(91, 124, 254, 0.2),
+    0 12px 34px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.log-viewer__new-pill:active {
+  transform: scale(0.98);
+}
+
+.log-viewer__new-pill__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #9eb8f0;
+  padding-right: 0.05rem;
+}
+
+.log-viewer__new-pill__count {
+  font-variant-numeric: tabular-nums;
+  color: #9ee9a8;
+}
+
+.log-viewer__new-pill__label {
+  font-weight: 500;
+  font-size: 0.76rem;
+  color: #c8cdd8;
+  letter-spacing: 0.01em;
 }
 
 .log-viewer__table {
