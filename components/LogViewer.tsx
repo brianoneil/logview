@@ -5,6 +5,7 @@ import {
   LogLevelChart,
   type LogLevelChartHandle,
 } from "@/components/LogLevelChart";
+import { LogMessageCell } from "@/components/LogMessageCell";
 import {
   DEFAULT_CHART_WINDOW_SECONDS,
   LOGVIEW_STORAGE,
@@ -706,11 +707,9 @@ export function LogViewer({
                   <td className="log-viewer__mono log-viewer__col-client">
                     {entry.clientId ?? "—"}
                   </td>
-                  <td
-                    className="log-viewer__message log-viewer__mono"
-                    dangerouslySetInnerHTML={{
-                      __html: ansiUp.ansi_to_html(entry.message),
-                    }}
+                  <LogMessageCell
+                    message={entry.message}
+                    ansiUp={ansiUp}
                   />
                 </tr>
               ))

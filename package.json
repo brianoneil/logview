@@ -20,6 +20,7 @@
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.4",
     "ansi_up": "^6.0.6",
+    "isomorphic-dompurify": "^3.7.1",
     "jose": "^6.2.2",
     "marked": "^17.0.5",
     "next": "^15.2.4",
