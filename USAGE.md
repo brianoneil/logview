@@ -1,5 +1,27 @@
 # Logging to Logview
 
+**Ingest** (`/api/ingest`) is **open**: no login or `Authorization` header required, so apps and scripts can send logs without shared secrets on the wire for ingest.
+
+The **web UI** (live viewer, docs) and the **live stream** (`/api/stream`) require signing in with a **passphrase** (session cookie). That keeps reading logs behind login while ingest stays easy to integrate.
+
+## Authentication (viewer & stream only)
+
+| What | Auth |
+|------|------|
+| **`POST` / `GET` `/api/ingest`** | None |
+| **`/`, `/usage`, SSE `/api/stream`** | Sign in in the browser (or `Authorization: Bearer <passphrase>` on `/api/stream` for non-browser clients) |
+
+Configure on the server:
+
+- `LOGVIEW_AUTH_SECRET` — at least **16 characters**; used to sign session JWTs. Keep secret.
+- `LOGVIEW_AUTH_PASSPHRASES` — JSON array of strings, e.g. `["alpha","beta"]`. **Multiple** passphrases are supported.
+
+See `.env.example` in the repo.
+
+**HTTPS** is strongly recommended in production.
+
+---
+
 Ingest URL (this deployment):
 
 **`https://logview.lotsgoingon.com/api/ingest`**
