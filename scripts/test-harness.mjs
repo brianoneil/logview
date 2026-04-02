@@ -14,10 +14,10 @@
 function parseArgs(argv) {
   const out = {
     baseUrl: "http://127.0.0.1:3000",
-    clientId: "",
+    clientId: "test-harness",
     mode: "steady",
     count: 25,
-    intervalMs: 450,
+    intervalMs: 300,
     help: false,
   };
   for (const raw of argv) {

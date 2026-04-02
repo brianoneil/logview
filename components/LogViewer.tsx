@@ -2,7 +2,16 @@
 
 import type { LogEntry } from "@/lib/types";
 import { AnsiUp } from "ansi_up";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+const SCROLL_TOP_THRESHOLD_PX = 8;
 
 function formatTime(iso: string) {
   try {
@@ -49,13 +58,54 @@ export function LogViewer({ initialStreamClientId = "" }: LogViewerProps) {
   const [sseStatus, setSseStatus] = useState<"connecting" | "open" | "error">(
     "connecting",
   );
+  const [newWhileScrolledCount, setNewWhileScrolledCount] = useState(0);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  /** Captured synchronously before each prepend so useLayoutEffect can fix scroll. */
+  const scrollSnapRef = useRef<{
+    atTop: boolean;
+    scrollTop: number;
+    scrollHeight: number;
+  } | null>(null);
 
   const appendEntries = useCallback((entries: LogEntry[]) => {
-    setRows((prev) => [...prev, ...entries].slice(-5_000));
+    if (entries.length === 0) return;
+    const el = scrollRef.current;
+    if (el) {
+      const atTop = el.scrollTop <= SCROLL_TOP_THRESHOLD_PX;
+      scrollSnapRef.current = {
+        atTop,
+        scrollTop: el.scrollTop,
+        scrollHeight: el.scrollHeight,
+      };
+      if (!atTop) {
+        setNewWhileScrolledCount((c) => c + entries.length);
+      }
+    } else {
+      scrollSnapRef.current = null;
+    }
+    setRows((prev) => [...entries, ...prev].slice(0, 5_000));
   }, []);
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    const snap = scrollSnapRef.current;
+    if (!el || !snap) return;
+    if (snap.atTop) {
+      el.scrollTop = 0;
+    } else {
+      const delta = el.scrollHeight - snap.scrollHeight;
+      el.scrollTop = snap.scrollTop + delta;
+    }
+    scrollSnapRef.current = null;
+  }, [rows]);
 
   useEffect(() => {
     setRows([]);
+    setNewWhileScrolledCount(0);
+    queueMicrotask(() => {
+      scrollRef.current?.scrollTo({ top: 0 });
+    });
 
     const path =
       typeof window !== "undefined"
@@ -102,6 +152,19 @@ export function LogViewer({ initialStreamClientId = "" }: LogViewerProps) {
     };
   }, [appliedStreamClientId, appendEntries]);
 
+  const onScrollAreaScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (el.scrollTop <= SCROLL_TOP_THRESHOLD_PX) {
+      setNewWhileScrolledCount(0);
+    }
+  }, []);
+
+  const scrollToLatest = useCallback(() => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    setNewWhileScrolledCount(0);
+  }, []);
+
   const filtered = useMemo(
     () => rows.filter((r) => rowMatchesFilter(r, textFilter)),
     [rows, textFilter],
@@ -113,13 +176,28 @@ export function LogViewer({ initialStreamClientId = "" }: LogViewerProps) {
 
   const clearLocalLogs = () => {
     setRows([]);
+    setNewWhileScrolledCount(0);
+    queueMicrotask(() => {
+      const el = scrollRef.current;
+      if (el) el.scrollTop = 0;
+    });
   };
+
+  const filterActive = textFilter.trim() !== "";
+  const countLabel = filterActive
+    ? `${filtered.length.toLocaleString()} visible · ${rows.length.toLocaleString()} total`
+    : `${rows.length.toLocaleString()} rows`;
 
   return (
     <div className="log-viewer">
       <header className="log-viewer__header">
         <div>
-          <h1 className="log-viewer__title">Logview</h1>
+          <div className="log-viewer__title-row">
+            <h1 className="log-viewer__title">Logview</h1>
+            <span className="log-viewer__count" aria-live="polite">
+              {countLabel}
+            </span>
+          </div>
           <p className="log-viewer__subtitle">
             Ephemeral ingest via{" "}
             <code className="log-viewer__code">POST /api/ingest</code> or{" "}
@@ -192,8 +270,15 @@ export function LogViewer({ initialStreamClientId = "" }: LogViewerProps) {
         </div>
       </div>
 
-      <div className="log-viewer__table-wrap" role="region" aria-label="Log lines">
-        <table className="log-viewer__table">
+      <div className="log-viewer__table-outer">
+        <div
+          ref={scrollRef}
+          className="log-viewer__table-wrap"
+          role="region"
+          aria-label="Log lines"
+          onScroll={onScrollAreaScroll}
+        >
+          <table className="log-viewer__table">
           <thead>
             <tr>
               <th scope="col" className="log-viewer__col-time">
@@ -242,6 +327,21 @@ export function LogViewer({ initialStreamClientId = "" }: LogViewerProps) {
             )}
           </tbody>
         </table>
+        </div>
+        {newWhileScrolledCount > 0 && (
+          <div className="log-viewer__new-pill-wrap">
+            <button
+              type="button"
+              className="log-viewer__new-pill"
+              onClick={scrollToLatest}
+            >
+              New messages
+              {newWhileScrolledCount > 1
+                ? ` (${newWhileScrolledCount.toLocaleString()})`
+                : ""}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -32,11 +32,26 @@ body {
   margin-bottom: 1.25rem;
 }
 
+.log-viewer__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.35rem;
+}
+
 .log-viewer__title {
-  margin: 0 0 0.35rem;
+  margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+.log-viewer__count {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #a8abb8;
+  white-space: nowrap;
 }
 
 .log-viewer__subtitle {
@@ -167,12 +182,44 @@ body {
   filter: none;
 }
 
+/* Outer positions the pill over the scroll viewport; pill is NOT inside overflow, so it stays visible. */
+.log-viewer__table-outer {
+  position: relative;
+}
+
 .log-viewer__table-wrap {
   overflow: auto;
   max-height: min(70vh, 900px);
   border: 1px solid #2a3145;
   border-radius: 8px;
   background: #12151c;
+}
+
+.log-viewer__new-pill-wrap {
+  position: absolute;
+  top: 0.65rem;
+  left: 50%;
+  z-index: 5;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.log-viewer__new-pill {
+  pointer-events: auto;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f1117;
+  cursor: pointer;
+  background: #8ccfff;
+  border: none;
+  border-radius: 999px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.log-viewer__new-pill:hover {
+  filter: brightness(1.06);
 }
 
 .log-viewer__table {
