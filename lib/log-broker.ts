@@ -1,7 +1,5 @@
 import type { LogEntry, LogLevel } from "./types";
 
-const DEFAULT_MAX_BUFFER = 5_000;
-
 type Subscriber = {
   clientIdFilter: string | null;
   send: (entry: LogEntry) => void;
@@ -10,15 +8,11 @@ type Subscriber = {
 /**
  * In-memory pub/sub for ephemeral logs. One instance per Node process (Dokku web dyno).
  * Uses `globalThis` so Next.js dev HMR does not reset state on every reload.
+ *
+ * No retention: subscribers only receive logs that arrive after they connect (live tail).
  */
 class LogBroker {
-  private buffer: LogEntry[] = [];
   private readonly subscribers = new Set<Subscriber>();
-  private readonly maxBuffer: number;
-
-  constructor(maxBuffer = DEFAULT_MAX_BUFFER) {
-    this.maxBuffer = maxBuffer;
-  }
 
   append(entry: Omit<LogEntry, "id" | "ts"> & { id?: string; ts?: string }): LogEntry {
     const full: LogEntry = {
@@ -30,11 +24,6 @@ class LogBroker {
         ? { clientId: entry.clientId }
         : {}),
     };
-
-    this.buffer.push(full);
-    if (this.buffer.length > this.maxBuffer) {
-      this.buffer = this.buffer.slice(this.buffer.length - this.maxBuffer);
-    }
 
     for (const sub of this.subscribers) {
       if (
@@ -53,26 +42,12 @@ class LogBroker {
   }
 
   /**
-   * Register a subscriber. Immediately replays the current buffer (filtered).
+   * Live updates only — no history sent on connect.
    * @param clientIdFilter null = all streams; string = only logs with that clientId
    */
   subscribe(clientIdFilter: string | null, send: (entry: LogEntry) => void): () => void {
     const sub: Subscriber = { clientIdFilter, send };
     this.subscribers.add(sub);
-
-    for (const e of this.buffer) {
-      if (
-        clientIdFilter === null ||
-        clientIdFilter === e.clientId
-      ) {
-        try {
-          send(e);
-        } catch {
-          this.subscribers.delete(sub);
-          return () => this.subscribers.delete(sub);
-        }
-      }
-    }
 
     return () => {
       this.subscribers.delete(sub);

@@ -5,8 +5,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/stream — SSE of log entries.
- * Optional: ?clientId=foo to only receive logs for that client (including buffer replay).
+ * GET /api/stream — SSE of log entries (live only; no history on connect).
+ * Optional: ?clientId=foo to only receive logs for that client.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -21,9 +21,8 @@ export async function GET(request: Request) {
 
   const stream = new ReadableStream<Uint8Array>({
     start(controller) {
-      // SSE comment: ensure at least one chunk is written immediately so the
-      // response headers/body flush. With an empty broker buffer, skipping this
-      // can leave clients stuck in CONNECTING (no bytes until the next ingest).
+      // SSE comment: flush headers/body immediately so clients leave CONNECTING
+      // before the next live log event.
       controller.enqueue(encoder.encode(": logview stream\n\n"));
 
       const safeSend = (entry: LogEntry) => {

@@ -16,9 +16,9 @@ As an engineer running or debugging an app, I want to **point my process at a Lo
 
 ### 1. Ephemeral logs
 
-- Logs exist **only in server memory** for the duration of live delivery.
-- **No persistence**: no files, no DB, no replay after refresh (unless we explicitly add that later).
-- Acceptable tradeoff: restart or crash clears buffered log state; the product is for **live tailing**, not audit trails.
+- The server **does not store** a log history for the UI: each SSE connection only receives **live** lines as they are ingested (no catch-up / buffer replay on connect).
+- **No persistence**: no files, no DB, no history after refresh (unless we explicitly add that later).
+- Acceptable tradeoff: the product is for **live tailing**, not audit trails.
 
 ### 2. Real-time delivery (SSE)
 
@@ -55,7 +55,7 @@ As an engineer running or debugging an app, I want to **point my process at a Lo
 
 - A **filter control** on the page; as the user types, the visible rows **update immediately** to match.
 - Filtering is **purely in the browser** over the rows already received in the session (substring match is sufficient for v1; regex optional later).
-- Filtering does **not** change what the server holds; it only changes **visibility** of buffered-in-memory lines in the UI.
+- Filtering does **not** change what the server streams; it only changes **visibility** of rows already received in the browser for this session.
 
 ---
 
