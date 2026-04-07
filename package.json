@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "Remote, ephemeral real-time log viewer (Logview)",
+  "workspaces": [
+    "packages/logview-node-console-bridge"
+  ],
   "engines": {
     "node": ">=20"
   },

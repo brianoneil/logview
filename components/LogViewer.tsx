@@ -5,6 +5,7 @@ import {
   LogLevelChart,
   type LogLevelChartHandle,
 } from "@/components/LogLevelChart";
+import { LogRowCopyButton } from "@/components/LogRowCopyButton";
 import { LogMessageCell } from "@/components/LogMessageCell";
 import {
   DEFAULT_CHART_WINDOW_SECONDS,
@@ -701,7 +702,14 @@ export function LogViewer({
                   data-level={String(entry.level).toLowerCase()}
                 >
                   <td className="log-viewer__mono log-viewer__col-time">
-                    {formatTime(entry.ts)}
+                    <span className="log-viewer__time-cell">
+                      <span className="log-viewer__time-text">
+                        {formatTime(entry.ts)}
+                      </span>
+                      <span className="log-viewer__copy-floating">
+                        <LogRowCopyButton entry={entry} />
+                      </span>
+                    </span>
                   </td>
                   <td className="log-viewer__level">{entry.level}</td>
                   <td className="log-viewer__mono log-viewer__col-client">

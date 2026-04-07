@@ -87,3 +87,53 @@ curl -sS "https://logview.lotsgoingon.com/api/ingest?message=hello&level=info&cl
 ```
 
 For long messages, use **POST JSON** instead of GET (URL length limits).
+
+---
+
+## POST — batch (multiple entries)
+
+**`POST /api/ingest/batch`** — send an array of log entries in one request. Useful for clients that buffer locally and flush on an interval rather than posting every line individually. Each entry follows the same shape as the single JSON ingest.
+
+`Content-Type: application/json` — body is a JSON **array**.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `message` or `msg` | Yes | Log line text |
+| `level` | No | `debug`, `info`, `warn`, `error` (default `info`) |
+| `clientId` | No | Optional tag for this log source |
+| `ts` | No | ISO timestamp; server sets one if omitted |
+
+Max batch size: **500 entries** per request.
+
+Returns **`202`** with `{"ok":true,"count":N,"ids":["…","…"]}`.
+
+```bash
+curl -sS -X POST "https://logview.lotsgoingon.com/api/ingest/batch" \
+  -H "Content-Type: application/json" \
+  -d '[
+    {"message":"Worker started","level":"info","clientId":"worker-1"},
+    {"message":"Processing item 42","level":"debug","clientId":"worker-1"},
+    {"message":"Item 42 done","level":"info","clientId":"worker-1"}
+  ]'
+```
+
+```javascript
+// Buffer logs locally, flush every 5 seconds
+const buffer = [];
+
+function log(message, level = "info", clientId) {
+  buffer.push({ message, level, clientId, ts: new Date().toISOString() });
+}
+
+async function flush() {
+  if (buffer.length === 0) return;
+  const batch = buffer.splice(0);
+  await fetch("https://logview.lotsgoingon.com/api/ingest/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(batch),
+  });
+}
+
+setInterval(flush, 5_000);
+```

@@ -1,5 +1,7 @@
 .next/
 out/
+# Packaged libs — build with `npm run build -w @logview/node-console-bridge`
+packages/*/dist/
 node_modules/
 .env
 .env.*

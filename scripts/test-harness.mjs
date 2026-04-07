@@ -16,7 +16,7 @@
 function parseArgs(argv) {
   const out = {
     baseUrl: "http://127.0.0.1:3000",
-    clientId: "test-harness",
+    clientId: "test",
     mode: "steady",
     count: 25,
     intervalMs: 300,

@@ -713,8 +713,50 @@ body {
 }
 
 .log-viewer__col-time {
+  position: relative;
   width: 7.5rem;
   white-space: nowrap;
+  overflow: visible;
+  vertical-align: middle;
+}
+
+/* Time + copy: hover row shows icon over the timestamp (left, stays visible with wide messages). */
+.log-viewer__time-cell {
+  position: relative;
+  display: block;
+  min-height: 1.35rem;
+}
+
+.log-viewer__time-text {
+  display: inline-block;
+  transition: opacity 0.12s ease;
+}
+
+.log-viewer__copy-floating {
+  position: absolute;
+  left: 0.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.log-viewer__row:hover .log-viewer__copy-floating,
+.log-viewer__row:focus-within .log-viewer__copy-floating,
+.log-viewer__copy-floating:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.log-viewer__row:hover .log-viewer__time-text,
+.log-viewer__row:focus-within .log-viewer__time-text {
+  opacity: 0.22;
+}
+
+.log-viewer__copy-floating .log-viewer__copy-btn {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 
 .log-viewer__col-level {
@@ -726,6 +768,50 @@ body {
   max-width: 10rem;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.log-viewer__copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #3a4158;
+  border-radius: 5px;
+  background: #222633;
+  color: #a8b0c4;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.log-viewer__copy-btn:hover {
+  background: #2a3145;
+  color: #c4c8d4;
+  border-color: #4a5570;
+}
+
+.log-viewer__copy-btn:focus-visible {
+  outline: 2px solid #8ccfff;
+  outline-offset: 2px;
+}
+
+.log-viewer__copy-btn--copied {
+  color: #7dd87d;
+  border-color: #3d6a45;
+  background: #1a2a1e;
+}
+
+.log-viewer__copy-btn--error {
+  color: #ff8a8a;
+  border-color: #6a3d3d;
+  background: #2a1a1a;
+}
+
+.log-viewer__copy-icon {
+  display: block;
+  opacity: 0.92;
 }
 
 .log-viewer__mono {
