@@ -1,0 +1,28 @@
+{
+  "name": "@logview/node-console-bridge",
+  "version": "0.1.0",
+  "description": "Tee Node.js console output to a Logview /api/ingest endpoint (see Logview USAGE.md)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "smoke": "node ./scripts/smoke.mjs"
+  },
+  "keywords": ["logview", "logging", "console", "ingest"],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "typescript": "5.9.3"
+  }
+}
