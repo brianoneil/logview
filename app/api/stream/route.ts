@@ -5,14 +5,21 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/stream — SSE of log entries (live only; no history on connect).
+ * GET /api/stream — SSE of log entries.
  * Optional: ?clientId=foo to only receive logs for that client.
+ * Optional: ?backlog=0 to skip the initial backlog replay (pure live tail).
+ *
+ * On connect, one `backlog` event is sent first: a JSON array (oldest-first) of
+ * the most recent entries from the in-memory ring buffer, so reconnecting
+ * viewers recover their session. Live entries then arrive as default `message`
+ * events.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const raw = searchParams.get("clientId");
   const clientIdFilter =
     raw === null || raw === "" ? null : raw;
+  const wantBacklog = searchParams.get("backlog") !== "0";
 
   const encoder = new TextEncoder();
   const broker = getLogBroker();
@@ -30,7 +37,16 @@ export async function GET(request: Request) {
         controller.enqueue(encoder.encode(payload));
       };
 
-      unsubscribe = broker.subscribe(clientIdFilter, safeSend);
+      const { unsubscribe: unsub, backlog } = broker.subscribeWithBacklog(
+        clientIdFilter,
+        safeSend,
+      );
+      unsubscribe = unsub;
+
+      if (wantBacklog && backlog.length > 0) {
+        const payload = `event: backlog\ndata: ${JSON.stringify(backlog)}\n\n`;
+        controller.enqueue(encoder.encode(payload));
+      }
 
       request.signal.addEventListener("abort", () => {
         try {

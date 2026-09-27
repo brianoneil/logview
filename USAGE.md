@@ -9,7 +9,7 @@ The **web UI** (live viewer, docs) and the **live stream** (`/api/stream`) requi
 | What | Auth |
 |------|------|
 | **`POST` / `GET` `/api/ingest`** | None |
-| **`/`, `/usage`, SSE `/api/stream`** | Sign in in the browser (or `Authorization: Bearer <passphrase>` on `/api/stream` for non-browser clients) |
+| **`/`, `/usage`, SSE `/api/stream`, `GET /api/logs`** | Sign in in the browser (or `Authorization: Bearer <passphrase>` on `/api/stream` and `/api/logs` for non-browser clients) |
 
 Configure on the server:
 
@@ -137,3 +137,55 @@ async function flush() {
 
 setInterval(flush, 5_000);
 ```
+
+---
+
+## Reading logs programmatically
+
+Logview keeps the most recent entries in a small **in-memory ring buffer** (default
+**500**, configurable with `LOGVIEW_BUFFER_SIZE`; `0` disables retention). Nothing is
+written to disk — the buffer dies with the process. Two ways to read it:
+
+### `GET /api/logs` — pull recent entries
+
+Same auth as the viewer (`Authorization: Bearer <passphrase>` or a browser session).
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `clientId` | No | Only entries with this clientId (default: all) |
+| `sinceId` | No | Exclusive cursor: only entries newer than this id |
+| `level` | No | Only entries at this level (`debug`, `info`, `warn`, `error`) |
+| `limit` | No | Max entries, 1–500 (default 200) |
+
+Returns **`200`** with `{"entries":[…],"oldest":true}` — entries are
+**oldest-first**, each shaped like an ingest entry (`id`, `ts`, `level`,
+`message`, optional `clientId`). `oldest` is `true` when the response starts at
+the buffer's oldest retained entry (i.e. entries before it may have been
+evicted, or no `sinceId` was given). **Page** by passing the last entry's `id`
+as `sinceId` on the next request.
+
+```bash
+curl -sS "https://logview.lotsgoingon.com/api/logs?limit=50" \
+  -H "Authorization: Bearer alpha"
+```
+
+This is the endpoint agents and scripts should poll — unlike the SSE stream, you
+control exactly how much you read per call.
+
+### SSE `/api/stream` — backlog replay on connect
+
+On connect the stream now sends **one `backlog` event first** (a JSON array of
+recent entries, oldest-first), then live entries as default `message` events.
+Reconnects therefore recover the recent past. Pass **`?backlog=0`** to skip the
+replay and get a pure live tail.
+
+### MCP server for AI agents
+
+**`packages/logview-mcp`** (npm workspace `@logview/mcp`) is an MCP server that
+exposes the tools above to agents: `logview_recent` (fetch + `sinceId` paging),
+`logview_send` (write annotations back into the stream — convention:
+`clientId: "analyst"`), and `logview_status`. Configure with `LOGVIEW_URL` and
+`LOGVIEW_PASSPHRASE`; see `packages/logview-mcp/README.md`.
+
+> Note: the buffer (like the SSE fan-out) is per-process. Scale `web` beyond one
+> container and each instance only knows about the logs it ingested.

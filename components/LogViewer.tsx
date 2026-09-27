@@ -360,6 +360,19 @@ export function LogViewer({
       }
     };
 
+    // Backlog replay on connect: oldest-first array of recently ingested entries.
+    // appendEntries prepends newest-first, so reverse before handing it over.
+    const onBacklog = (ev: MessageEvent<string>) => {
+      try {
+        const entries = JSON.parse(ev.data) as LogEntry[];
+        if (Array.isArray(entries) && entries.length > 0) {
+          appendEntries([...entries].reverse());
+        }
+      } catch (e) {
+        console.error("Bad SSE backlog payload:", e);
+      }
+    };
+
     const onOpen = () => setSseStatus("open");
     const onError = () => {
       if (source.readyState === EventSource.CLOSED) {
@@ -368,12 +381,14 @@ export function LogViewer({
     };
 
     source.addEventListener("message", onMessage);
+    source.addEventListener("backlog", onBacklog as EventListener);
     source.addEventListener("open", onOpen);
     source.addEventListener("error", onError);
     queueMicrotask(syncStatusFromReadyState);
 
     return () => {
       source.removeEventListener("message", onMessage);
+      source.removeEventListener("backlog", onBacklog as EventListener);
       source.removeEventListener("open", onOpen);
       source.removeEventListener("error", onError);
       source.close();

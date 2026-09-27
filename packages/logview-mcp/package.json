@@ -1,0 +1,32 @@
+{
+  "name": "@logview/mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing Logview recent-log tools for agents (see Logview USAGE.md)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "smoke": "node ./scripts/smoke.mjs"
+  },
+  "keywords": ["logview", "mcp", "logs", "agent", "model-context-protocol"],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "typescript": "5.9.3"
+  }
+}

@@ -1,10 +1,8 @@
 import {
   isAuthDisabledInDev,
   isAuthFullyConfigured,
-  LV_SESSION_COOKIE,
 } from "@/lib/auth-config";
-import { verifyPassphrase } from "@/lib/auth-passphrase";
-import { verifySessionJwtEdge } from "@/lib/auth-jwt-edge";
+import { isAuthorizedRequest } from "@/lib/authorize-request";
 import { type NextRequest, NextResponse } from "next/server";
 
 function authNotConfiguredResponse(request: NextRequest) {
@@ -25,18 +23,7 @@ function authNotConfiguredResponse(request: NextRequest) {
 }
 
 async function isAuthorized(request: NextRequest): Promise<boolean> {
-  if (isAuthDisabledInDev()) return true;
-
-  const cookie = request.cookies.get(LV_SESSION_COOKIE)?.value;
-  if (cookie && (await verifySessionJwtEdge(cookie))) return true;
-
-  const auth = request.headers.get("authorization");
-  if (auth?.startsWith("Bearer ")) {
-    const token = auth.slice("Bearer ".length);
-    if (await verifyPassphrase(token)) return true;
-  }
-
-  return false;
+  return isAuthorizedRequest(request.headers);
 }
 
 export async function middleware(request: NextRequest) {

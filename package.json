@@ -4,7 +4,8 @@
   "private": true,
   "description": "Remote, ephemeral real-time log viewer (Logview)",
   "workspaces": [
-    "packages/logview-node-console-bridge"
+    "packages/logview-node-console-bridge",
+    "packages/logview-mcp"
   ],
   "engines": {
     "node": ">=20"
