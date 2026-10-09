@@ -119,18 +119,16 @@ npm run dev
 }
 ```
 
-**Quick manual checks:**
+**Automated e2e (recommended):**
 
 ```bash
-# ingest (no auth)
-curl -sS -X POST "http://127.0.0.1:3000/api/ingest" \
-  -H "Content-Type: application/json" \
-  -d '{"message":"wip test","clientId":"dev"}'
-
-# read buffer (auth)
-curl -sS "http://127.0.0.1:3000/api/logs?limit=10" \
-  -H "Authorization: Bearer YOUR_PASSPHRASE"
+npm run dev   # separate terminal
+npm run test:e2e:all
 ```
+
+`scripts/test-e2e.mjs` covers login, `/api/logs`, SSE backlog ordering, host cookie isolation, and MCP HTTP client. Uses passphrases from `.env`.
+
+**Local login gotcha:** session cookies are host-specific — use **either** `http://localhost:3000` **or** `http://127.0.0.1:3000`, not both. Passphrase must match `LOGVIEW_AUTH_PASSPHRASES` in `.env` (not USAGE.md examples).
 
 ---
 
@@ -139,8 +137,8 @@ curl -sS "http://127.0.0.1:3000/api/logs?limit=10" \
 ### Must-do before merge
 
 1. **Update `requirements.md`** — §1 still says “no catch-up / buffer replay on connect”; contradicts this branch. Revise vision/ephemeral wording (bounded memory retention vs disk persistence).
-2. **Automated tests** — `scripts/test-harness.mjs` does not cover `/api/logs`, `sinceId`/`oldest`, or SSE `backlog`. Add harness cases or integration tests.
-3. **SSE ordering review** — Stream route subscribes (live `safeSend` active) *before* enqueueing the `backlog` event. A log ingested in that window could appear **before** the backlog batch in the client. Confirm acceptable or buffer live events until backlog is sent.
+2. ~~**Automated tests**~~ — **`npm run test:e2e`** (22 checks). Harness still ingest-only for manual UI demos.
+3. ~~**SSE ordering review**~~ — Fixed: snapshot + backlog event before `subscribe()`.
 4. **Middleware vs route auth** — `/api/logs` relies on route-level auth only. Fine for Bearer clients; confirm browser/session behavior matches expectations (same-origin fetches include cookies).
 
 ### Should-do

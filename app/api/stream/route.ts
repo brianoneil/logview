@@ -37,16 +37,21 @@ export async function GET(request: Request) {
         controller.enqueue(encoder.encode(payload));
       };
 
-      const { unsubscribe: unsub, backlog } = broker.subscribeWithBacklog(
-        clientIdFilter,
-        safeSend,
-      );
-      unsubscribe = unsub;
+      // Snapshot and emit backlog before subscribing so live lines cannot
+      // appear ahead of the replay batch on connect.
+      const backlog = wantBacklog
+        ? broker.snapshot({
+            clientId: clientIdFilter,
+            limit: 500,
+          })
+        : [];
 
       if (wantBacklog && backlog.length > 0) {
         const payload = `event: backlog\ndata: ${JSON.stringify(backlog)}\n\n`;
         controller.enqueue(encoder.encode(payload));
       }
+
+      unsubscribe = broker.subscribe(clientIdFilter, safeSend);
 
       request.signal.addEventListener("abort", () => {
         try {

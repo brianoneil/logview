@@ -17,7 +17,9 @@
     "lint": "next lint",
     "test:harness": "node scripts/test-harness.mjs",
     "test:harness:burst": "node scripts/test-harness.mjs --mode=burst --count=40",
-    "test:harness:mixed": "node scripts/test-harness.mjs --mode=mixed --count=30"
+    "test:harness:mixed": "node scripts/test-harness.mjs --mode=mixed --count=30",
+    "test:e2e": "node scripts/test-e2e.mjs",
+    "test:e2e:all": "npm run build --workspace=@logview/mcp && node scripts/test-e2e.mjs"
   },
   "dependencies": {
     "@types/node": "^22.13.0",
